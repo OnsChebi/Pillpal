@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, StyleSheet, Button, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Audio } from 'expo-av';
 import { FontAwesome } from '@expo/vector-icons';
 import * as mime from 'react-native-mime-types';
@@ -114,14 +114,7 @@ export function VoiceRecord({ navigation }) {
     return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  // Navigation handlers
-  const navigateToTranscription = () => {
-    navigation.navigate('TranscriptionScreen'); // Navigate to transcription screen
-  };
-
-  const navigateToSummarization = () => {
-    navigation.navigate('SummarizationScreen'); // Navigate to summarization screen
-  };
+  
 
   return (
     <View className="flex-1 justify-center items-center bg-white">
@@ -144,10 +137,10 @@ export function VoiceRecord({ navigation }) {
 
       {/* Button Row for Transcription and Summarization */}
       <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.button} onPress={navigateToTranscription}>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Transcription')}>
           <Text style={styles.buttonText}>Transcription</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={navigateToSummarization}>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Summarization')}>
           <Text style={styles.buttonText}>Summarization</Text>
         </TouchableOpacity>
       </View>

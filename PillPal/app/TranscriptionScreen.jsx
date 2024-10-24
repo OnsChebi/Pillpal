@@ -5,8 +5,7 @@ export function TranscriptionScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.text}>
-        {/* Placeholder for transcription text */}
-        Transcription text goes here.
+        Summarization .
       </Text>
     </ScrollView>
   );

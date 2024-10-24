@@ -5,8 +5,7 @@ export function SummarizationScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.text}>
-        {/* Placeholder for summarization text */}
-        Summarization text goes here.
+        Summarization .
       </Text>
     </ScrollView>
   );
