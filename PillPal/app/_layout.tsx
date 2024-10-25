@@ -33,6 +33,8 @@ export default function RootLayout() {
         <Stack.Screen name="+not-found" />
         <Stack.Screen name="index" />
         <Stack.Screen name="VoiceRecord" />
+        <Stack.Screen name="TranscriptionScreen" />
+        <Stack.Screen name="SummarizationScreen" />
       </Stack>
     </ThemeProvider>
   );

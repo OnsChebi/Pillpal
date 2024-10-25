@@ -1,21 +1,11 @@
-import React from "react";
-import { ScrollView, Text, StyleSheet } from "react-native";
+// app/transcription_screen.js
+import React from 'react';
+import { View, Text } from 'react-native';
 
-export function TranscriptionScreen() {
+export function Transcription() {
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.text}>
-        Summarization .
-      </Text>
-    </ScrollView>
+    <View>
+      <Text>Transcription Screen</Text>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-  },
-  text: {
-    fontSize: 16,
-  },
-});

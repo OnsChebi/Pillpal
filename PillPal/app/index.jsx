@@ -3,8 +3,8 @@ import { View } from "react-native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { SplashScreen } from "./splashscreen";
 import { VoiceRecord } from "./VoiceRecord";
-//import { TranscriptionScreen } from "./TranscriptionScreen";
-import { SummarizationScreen } from "./SummarizationScreen";
+import { Summarization } from "./SummarizationScreen";
+import { Transcription } from "./TranscriptionScreen";
 
 const Stack = createStackNavigator();
 
@@ -16,7 +16,7 @@ export default function App() {
       setSplashShow(false);
     }, 2000);
 
-    return () => clearTimeout(timer); // Clear timeout if the component is unmounted
+    return () => clearTimeout(timer);
   }, []);
 
   return (
@@ -24,15 +24,21 @@ export default function App() {
       {isSplashShow ? (
         <SplashScreen />
       ) : (
-        
         <Stack.Navigator>
           <Stack.Screen
-            name="VoiceRecord"
+            name="VoiceRecord" // Ensure this matches your component
             component={VoiceRecord}
             options={{ headerShown: false }}
           />
-          {/* <Stack.Screen name="Transcription" component={TranscriptionScreen} /> */}
-          <Stack.Screen name="Summarization" component={SummarizationScreen} />
+          <Stack.Screen
+            name="Transcription"
+            component={Transcription} // Register the Transcription component
+            options={{ title: "Transcription" }} // Optional: Customize title
+          />
+          <Stack.Screen
+            name="Summarization"
+            component={Summarization}
+          />
         </Stack.Navigator>
       )}
     </View>
