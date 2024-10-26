@@ -7,7 +7,7 @@ import torch
 import requests
 
 # Configure device
-device = "cpu"
+device = "cuda" if torch.cuda.is_available() else "cpu"
 torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
 
 # Load transcription model and processor
@@ -47,9 +47,10 @@ class MedicalSummaryGenerator:
         }
         
         response = requests.post(
-            "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3",
-            headers=self.headers,
-            json=payload
+    "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3",
+    headers=self.headers,
+    json=payload,
+    timeout=15 
         )
 
         if response.status_code == 200:
@@ -59,10 +60,13 @@ class MedicalSummaryGenerator:
 
 # Function to convert audio and transcribe it
 def mp3_to_array(mp3_path):
-    audio = AudioSegment.from_mp3(mp3_path)
-    audio = audio.set_channels(1).set_frame_rate(16000)  # Mono and 16kHz
-    audio_np = np.array(audio.get_array_of_samples())
-    return audio_np.astype(np.float32) / 32768.0  # Normalize
+    try:
+        audio = AudioSegment.from_mp3(mp3_path)
+        audio = audio.set_channels(1).set_frame_rate(16000)  # Mono and 16kHz
+        audio_np = np.array(audio.get_array_of_samples())
+        return audio_np.astype(np.float32) / 32768.0  # Normalize
+    except Exception as e:
+        raise ValueError(f"Error processing audio file: {e}")
 
 # Flask app setup
 app = Flask(__name__)

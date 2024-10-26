@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity ,ActivityIndicator } from 'react-native';
 import { Audio } from 'expo-av';
 import { FontAwesome } from '@expo/vector-icons';
 import * as mime from 'react-native-mime-types';
@@ -10,6 +10,7 @@ export function VoiceRecord({ navigation }) {
   const [uri, setUri] = useState('');
   const [permissionResponse, requestPermission] = Audio.usePermissions();
   const [transcription, setTranscription] = useState('');
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [timer, setTimer] = useState(0); // State for the timer
   const [intervalId, setIntervalId] = useState(null);
 
@@ -63,6 +64,7 @@ export function VoiceRecord({ navigation }) {
 
   // Function to send audio to Flask server
   const sendAudioToServer = async (uri) => {
+    setIsTranscribing(true);
     const fileType = mime.lookup(uri);
     const formData = new FormData();
     formData.append('audio', {
@@ -72,7 +74,7 @@ export function VoiceRecord({ navigation }) {
     });
 
     try {
-      const response = await fetch('http://192.168.1.6:5000/transcribe', {
+      const response = await fetch('http://192.168.1.19:5000/transcribe', {
         method: 'POST',
         body: formData,
         headers: {
@@ -135,9 +137,16 @@ export function VoiceRecord({ navigation }) {
         <FontAwesome name={recording ? 'pause' : 'microphone'} size={32} color="white" />
       </TouchableOpacity>
 
+      {isTranscribing && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#24bc84" />
+          <Text style={styles.loadingText}>Transcribing, please wait...</Text>
+        </View>
+      )}
+
       {/* Button Row for Transcription and Summarization */}
       <View style={styles.buttonRow}>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Transcription')}>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Transcription', { transcription })}>
           <Text style={styles.buttonText}>Transcription</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Summarization')}>
@@ -151,6 +160,18 @@ export function VoiceRecord({ navigation }) {
 const styles = StyleSheet.create({
   playbackContainer: {
     marginTop: 20,
+  },
+  loadingContainer: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -50 }, { translateY: -50 }],
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#24bc84',
   },
   roundedRectangle: {
     width: '100%',
@@ -169,14 +190,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 40,
     justifyContent: 'space-between',
-    width: '100%', // Adjust button width based on parent container
+    width: '100%', 
   },
   button: {
     backgroundColor: '#24bc84',
     paddingVertical: 10,
     paddingHorizontal: 10,
     borderRadius: 5,
-    marginHorizontal: 10, // Space between buttons
+    marginHorizontal: 10, 
   },
   buttonText: {
     color: 'white',
