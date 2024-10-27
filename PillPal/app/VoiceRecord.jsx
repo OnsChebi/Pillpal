@@ -4,6 +4,8 @@ import { Audio } from 'expo-av';
 import { FontAwesome } from '@expo/vector-icons';
 import * as mime from 'react-native-mime-types';
 
+
+
 export function VoiceRecord({ navigation }) {
   const [recording, setRecording] = useState(null);
   const [sound, setSound] = useState(null);
@@ -11,6 +13,7 @@ export function VoiceRecord({ navigation }) {
   const [permissionResponse, requestPermission] = Audio.usePermissions();
   const [transcription, setTranscription] = useState('');
   const [isTranscribing, setIsTranscribing] = useState(false);
+  const [isTranscribingDone, setIsTranscribingDone] = useState(false);
   const [timer, setTimer] = useState(0); // State for the timer
   const [intervalId, setIntervalId] = useState(null);
 
@@ -32,13 +35,14 @@ export function VoiceRecord({ navigation }) {
       );
       setRecording(recording);
       console.log('Recording started');
-
+      setIsTranscribingDone(false)
       // Start the timer
       setTimer(0);
       const id = setInterval(() => {
         setTimer((prevTimer) => prevTimer + 1);
       }, 1000);
       setIntervalId(id);
+
     } catch (err) {
       console.error('Failed to start recording', err);
     }
@@ -90,6 +94,9 @@ export function VoiceRecord({ navigation }) {
       }
     } catch (error) {
       console.error('Error uploading audio:', error);
+    }finally {
+      setIsTranscribing(false);
+      setIsTranscribingDone(true);
     }
   };
 
@@ -124,6 +131,15 @@ export function VoiceRecord({ navigation }) {
       <Text className="absolute top-10 text-white font-bold text-2xl">
         {recording ? 'Recording...' : 'Start Recording'}
       </Text>
+      {isTranscribing ? (
+  <View style={{ marginTop:100, alignItems: 'center' }}> 
+    <ActivityIndicator size={100} color="#ffffff" /> 
+  </View>
+) : isTranscribingDone ? (
+  <Text className="text-white top-20 font-bold text-2xl">Transcription is ready!</Text>
+) : (
+  <Text></Text>
+)}
       {/* Timer Display */}
       <Text className="absolute top-96 text-black font-bold text-2xl">
         {recording ? formatTimer(timer) : ''}
@@ -137,12 +153,6 @@ export function VoiceRecord({ navigation }) {
         <FontAwesome name={recording ? 'pause' : 'microphone'} size={32} color="white" />
       </TouchableOpacity>
 
-      {isTranscribing && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#24bc84" />
-          <Text style={styles.loadingText}>Transcribing, please wait...</Text>
-        </View>
-      )}
 
       {/* Button Row for Transcription and Summarization */}
       <View style={styles.buttonRow}>
@@ -167,6 +177,15 @@ const styles = StyleSheet.create({
     left: '50%',
     transform: [{ translateX: -50 }, { translateY: -50 }],
     alignItems: 'center',
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  horizontal: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10,
   },
   loadingText: {
     marginTop: 10,

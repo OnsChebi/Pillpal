@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet ,ScrollView} from 'react-native';
 
 export function Transcription({ route }) {
   // Get the transcription passed as a parameter
@@ -8,7 +8,9 @@ export function Transcription({ route }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Transcription</Text>
-      <Text style={styles.transcription}>{transcription || "No transcription available."}</Text>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Text style={styles.transcription}>{transcription || "No transcription available."}</Text>
+      </ScrollView>
     </View>
   );
 }
@@ -23,7 +25,10 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
-    color:'#24bc84',
+    color: '#24bc84',
+  },
+  scrollContainer: {
+    paddingVertical: 10,
   },
   transcription: {
     fontSize: 16,
