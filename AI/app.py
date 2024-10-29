@@ -31,7 +31,7 @@ pipe = pipeline(
     return_timestamps=True,
     torch_dtype=torch_dtype,
     device=device,
-    language="en"
+   
 )
 
 summary_generator = MedicalSummaryGenerator(os.getenv("HUGGING_FACE_API_TOKEN"))
@@ -73,7 +73,10 @@ def transcribe():
     
     # Transcribe the audio
     audio_array = mp3_to_array(mp3_path)
-    sample = {"input_values": audio_array}    
+    sample = {
+        "raw": audio_array,  # Use "raw" key for the numpy array
+        "sampling_rate": 16000  # Include the sampling rate
+    }
     try:
         result = pipe(sample)
         transcription_text = result['text']
