@@ -29,16 +29,16 @@ Make sure you have the following installed:
 - Python 3.x
 - Flask
 
-Frontend Setup:
-  cd pillpal
-  npm install
-  npx expo start
+## Frontend Setup:
+- cd pillpal
+- npm install
+- npx expo start
 
-Backend Setup:
-cd AI
-create .env File add HUGGING_FACE_API_TOKEN=YOUR_TOKEN
-pip install flask transformers pydub torch numpy huggingface_hub python-dotenv
-python app.py
+## Backend Setup:
+- cd AI
+- create .env File add HUGGING_FACE_API_TOKEN=YOUR_TOKEN
+- pip install flask transformers pydub torch numpy huggingface_hub python-dotenv
+- python app.py
 
 
 
