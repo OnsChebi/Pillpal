@@ -1,10 +1,9 @@
-# medical_summary_generator.py
-
 from transformers import pipeline
 import re
 
 class MedicalSummaryGenerator:
     def __init__(self, token):
+        # Initialize the summarizer pipeline
         self.summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
         self.system_prompt = """You are a medical assistant. Your role is to generate a summary for the consultation..."""
 
@@ -12,6 +11,7 @@ class MedicalSummaryGenerator:
         if not transcription or len(transcription.split()) < 10:  # Check if the transcription is too short
             return "Transcription is too short to summarize."
         try:
+            # Use generate_kwargs to remove the max_new_tokens warning
             summary = self.summarizer(transcription, max_length=150, min_length=40, do_sample=False)
             return summary[0]['summary_text']
         except Exception as e:
@@ -21,16 +21,20 @@ class MedicalSummaryGenerator:
     @staticmethod
     def extract_summary_parts(summary):
         patterns = {
-            "Symptoms": r"Symptoms:\s*(.*?)\s*(?=\n\n|\Z)",
-            "Treatment": r"Treatment:\s*(.*?)\s*(?=\n\n|\Z)",
-            "Diagnostic": r"Diagnostic:\s*(.*?)\s*(?=\n\n|\Z)",
-            "Illness History": r"Illness History:\s*(.*?)\s*(?=\n\n|\Z)",
-            "Family History": r"Family History:\s*(.*?)\s*(?=\n\n|\Z)",
-            "Social History": r"Social History:\s*(.*?)$"
+            "Symptoms": r"(?i)(symptoms|concerns|issues|complaints):?\s*(.*?)(?=\n|$)",
+            "Treatment": r"(?i)(treatment|medications|therapy|prescription):?\s*(.*?)(?=\n|$)",
+            "Diagnostic": r"(?i)(diagnosis|diagnostic|findings|test results):?\s*(.*?)(?=\n|$)",
+            "Illness History": r"(?i)(history|past illnesses|illness history):?\s*(.*?)(?=\n|$)",
+            "Family History": r"(?i)(family history):?\s*(.*?)(?=\n|$)",
+            "Social History": r"(?i)(social history|lifestyle|habits):?\s*(.*?)(?=\n|$)"
         }
-        extracted_parts = {
-            key: re.search(pattern, summary, re.DOTALL).group(1).strip() if re.search(pattern, summary, re.DOTALL) else "Not provided"
-            for key, pattern in patterns.items()
-        }
-        return extracted_parts
 
+        extracted_parts = {}
+        for key, pattern in patterns.items():
+            match = re.search(pattern, summary, re.DOTALL)
+            if match:
+                extracted_parts[key] = match.group(2).strip()
+            else:
+                extracted_parts[key] = "Not provided"
+                
+        return extracted_parts
