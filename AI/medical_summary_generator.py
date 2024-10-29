@@ -4,14 +4,16 @@ class MedicalSummaryGenerator:
     def __init__(self, token):
         # Initialize the Hugging Face client for the Mistral model
         self.client = InferenceClient("mistralai/Mistral-7B-Instruct-v0.3", token=token)
-        self.system_prompt = """You are a medical assistant. Your role is to generate a summary for the consultation. The summary should consist of the following parts:
+        self.system_prompt = """You are a medical assistant. Your role is to generate a detailed summary for the consultation. The summary should include:
 
-1. Symptoms: List the symptoms that the patient has reported.
-2. Treatment: List the drugs prescribed by the doctor or any other recommended activities such as taking rest.
-3. Diagnostic: Provide the diagnosis given by the doctor.
-4. Illness History: List any diseases that the patient has already had. If there is no history of previous illness, return "No history of previous illness."
-5. Family History: Indicate if a member of the patient's family has a history of any disease. If there is no family history, return "No family history."
-6. Social History: Note any activities or environmental factors that may be causing the patient to feel sick, such as a hard work environment or stress. If there is no social history, return "No social history."""
+1. **Symptoms:** Clearly list all symptoms reported by the patient. 
+2. **Treatment:** Specify any drugs prescribed or other recommended activities.
+3. **Diagnostic:** State the diagnosis given by the doctor. If pending, mention that the diagnosis is awaited.
+4. **Illness History:** Summarize any past illnesses or state "No history of previous illness" if applicable.
+5. **Family History:** Include any relevant family medical history or state "No family history" if applicable.
+6. **Social History:** Describe any lifestyle factors or environmental influences affecting the patient. If none, state "No social history." 
+
+Be concise, clear, and ensure that all points are addressed in the summary. Include specific details from the patient's transcription. Use bullet points for better readability."""
 
     def get_medical_summary(self, transcription):
         # Create the user message with the transcription
