@@ -5,6 +5,8 @@ import numpy as np
 import os
 import torch
 import requests
+from medical_summary_generator import MedicalSummaryGenerator
+
 
 # Configure device
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -24,47 +26,24 @@ pipe = pipeline(
     tokenizer=processor.tokenizer,
     feature_extractor=processor.feature_extractor,
     max_new_tokens=128,
-    chunk_length_s=30,
-    batch_size=16,
+    chunk_length_s=5,
+    batch_size=2,
     return_timestamps=True,
     torch_dtype=torch_dtype,
     device=device,
+    language="en"
 )
 
-# Medical Summary Generator Class
-class MedicalSummaryGenerator:
-    def __init__(self, token):
-        self.token = token
-        self.headers = {
-            "Authorization": f"Bearer {self.token}"
-        }
+summary_generator = MedicalSummaryGenerator(os.getenv("HUGGING_FACE_API_TOKEN"))
 
-    def get_medical_summary(self, transcription):
-        # API request body
-        payload = {
-            "inputs": transcription,
-            "parameters": {"max_new_tokens": 300},
-        }
-        
-        response = requests.post(
-    "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3",
-    headers=self.headers,
-    json=payload,
-    timeout=15 
-        )
-
-        if response.status_code == 200:
-            return response.json().get('generated_text', 'No summary generated')
-        else:
-            return f"Error: {response.text}"
 
 # Function to convert audio and transcribe it
 def mp3_to_array(mp3_path):
     try:
         audio = AudioSegment.from_mp3(mp3_path)
-        audio = audio.set_channels(1).set_frame_rate(16000)  # Mono and 16kHz
+        audio = audio.set_channels(1).set_frame_rate(16000)
         audio_np = np.array(audio.get_array_of_samples())
-        return audio_np.astype(np.float32) / 32768.0  # Normalize
+        return audio_np.astype(np.float32) / 32768.0
     except Exception as e:
         raise ValueError(f"Error processing audio file: {e}")
 
@@ -76,8 +55,6 @@ audio_directory = "Doctor"
 if not os.path.exists(audio_directory):
     os.makedirs(audio_directory)
 
-# Initialize the MedicalSummaryGenerator with your API token
-summary_generator = MedicalSummaryGenerator(token=os.getenv("HUGGING_FACE_API_TOKEN"))
 @app.route('/transcribe', methods=['POST'])
 def transcribe():
     if 'audio' not in request.files:
@@ -96,20 +73,38 @@ def transcribe():
     
     # Transcribe the audio
     audio_array = mp3_to_array(mp3_path)
-    sample = {"array": audio_array, "sampling_rate": 16000}
-    
+    sample = {"input_values": audio_array}    
     try:
         result = pipe(sample)
-        transcription_text = result.get("text", "")
+        transcription_text = result['text']
 
         # Generate the medical summary from the transcription
         summary_text = summary_generator.get_medical_summary(transcription_text)
+        extracted_summary = summary_generator.extract_summary_parts(summary_text)
 
+
+        print("Transcription:", transcription_text)
+        print("Full Summary:", summary_text)
+        print("Extracted Summary Parts:", extracted_summary)
         # Return the transcription and summary
         return jsonify({
             "transcription": transcription_text,
-            "summary": summary_text
+            "summary": summary_text,
+            "extracted_summary": extracted_summary
+
         }), 200
+    except Exception as e:
+        print("Error during transcription:", str(e))
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/summarize', methods=['POST'])
+def generate_summary():
+    data = request.json
+    transcription = data.get('transcription', '')
+    try:
+        summary_text = summary_generator.get_medical_summary(transcription)
+        extracted_summary = summary_generator.extract_summary_parts(summary_text)
+        return jsonify(extracted_summary)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
