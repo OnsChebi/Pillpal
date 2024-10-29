@@ -9,12 +9,14 @@ npm-debug.*
 *.mobileprovision
 *.orig.*
 web-build/
+
 PillPal/node_modules/
 
 # Ignore virtual environment directories
 venv/
 env/
 .venv/
+AI/.env
 
 
 # macOS
