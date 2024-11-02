@@ -164,7 +164,7 @@ export function VoiceRecord({ navigation }) {
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Transcription', { transcription })}>
           <Text style={styles.buttonText}>Transcription</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Summarization',{ summary: summaryText })}>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Summarization',{ summaryText })}>
           <Text style={styles.buttonText}>Summarization</Text>
         </TouchableOpacity>
       </View>
