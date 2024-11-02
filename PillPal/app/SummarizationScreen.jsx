@@ -1,38 +1,76 @@
 import React from 'react';
-import { View, Text, StyleSheet ,ScrollView} from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 
 export function Summarization({ route }) {
-  // Get the transcription passed as a parameter
-  const { transcription } = route.params;
-  console.log(transcription)
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Summarization</Text>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.transcription}>{transcription || "No Summarization available."}</Text>
-      </ScrollView>
+  // Retrieve the summary passed from the previous screen
+  const { summary } = route.params;
+
+  // Function to extract summary parts
+  const extractSummaryParts = (summary) => {
+    return {
+      Symptoms: summary.Symptoms || 'Not provided',
+      Treatment: summary.Treatment || 'Not provided',
+      Diagnostic: summary.Diagnostic || 'Not provided',
+      "Illness History": summary["Illness History"] || 'Not provided',
+      "Family History": summary["Family History"] || 'Not provided',
+      "Social History": summary["Social History"] || 'Not provided',
+    };
+  };
+
+  // Parse the summary into an object if it's a structured summary
+  const summaryParts = extractSummaryParts(summary);
+
+  const renderItem = ({ item }) => (
+    <View style={styles.item}>
+      <Text style={styles.itemTitle}>{item.title}</Text>
+      <Text style={styles.itemContent}>{item.content}</Text>
     </View>
+  );
+
+  const data = [
+    { title: 'Symptoms', content: summaryParts.Symptoms },
+    { title: 'Treatment', content: summaryParts.Treatment },
+    { title: 'Diagnostic', content: summaryParts.Diagnostic },
+    { title: 'Illness History', content: summaryParts['Illness History'] },
+    { title: 'Family History', content: summaryParts['Family History'] },
+    { title: 'Social History', content: summaryParts['Social History'] },
+  ];
+
+  return (
+    <FlatList
+      data={data}
+      renderItem={renderItem}
+      keyExtractor={(item) => item.title}
+      contentContainerStyle={styles.container}
+      ListHeaderComponent={<Text style={styles.title}>Medical Consultation Summary</Text>}
+    />
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 20,
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#24bc84',
   },
-  scrollContainer: {
-    paddingVertical: 10,
+  item: {
+    marginBottom: 15,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    backgroundColor: '#f9f9f9',
   },
-  transcription: {
+  itemTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  itemContent: {
     fontSize: 16,
-    lineHeight: 24,
-    color: 'black',
+    marginTop: 5,
   },
 });

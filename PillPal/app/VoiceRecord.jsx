@@ -14,8 +14,9 @@ export function VoiceRecord({ navigation }) {
   const [transcription, setTranscription] = useState('');
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isTranscribingDone, setIsTranscribingDone] = useState(false);
-  const [timer, setTimer] = useState(0); // State for the timer
+  const [timer, setTimer] = useState(0); 
   const [intervalId, setIntervalId] = useState(null);
+  const [summaryText, setSummary] = useState('');
 
   // Function to start recording
   async function startRecording() {
@@ -88,17 +89,21 @@ export function VoiceRecord({ navigation }) {
 
       const responseData = await response.json();
       if (response.ok) {
-        setTranscription(responseData.transcription); // Display transcription
+        setTranscription(responseData.transcription);
+        setSummary(responseData.summary); 
+        console.log('Summary:', responseData.summary);
       } else {
         console.error('Error transcribing:', responseData.error);
       }
     } catch (error) {
       console.error('Error uploading audio:', error);
-    }finally {
+    } finally {
       setIsTranscribing(false);
       setIsTranscribingDone(true);
+      fetchSummary();
     }
   };
+
 
   useEffect(() => {
     return sound
@@ -159,7 +164,7 @@ export function VoiceRecord({ navigation }) {
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Transcription', { transcription })}>
           <Text style={styles.buttonText}>Transcription</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Summarization')}>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Summarization',{ summary: summaryText })}>
           <Text style={styles.buttonText}>Summarization</Text>
         </TouchableOpacity>
       </View>

@@ -1,4 +1,5 @@
-from huggingface_hub import InferenceClient # type: ignore
+from huggingface_hub import InferenceClient  # type: ignore
+import re
 
 class MedicalSummaryGenerator:
     def __init__(self, token):
@@ -30,7 +31,6 @@ Be concise, clear, and ensure that all points are addressed in the summary. Incl
 
     @staticmethod
     def extract_summary_parts(summary):
-        import re
         # Define regex patterns for each part
         patterns = {
             "Symptoms": r"Symptoms:\s*(.*?)\n\n",
@@ -45,9 +45,6 @@ Be concise, clear, and ensure that all points are addressed in the summary. Incl
         extracted_parts = {}
         for key, pattern in patterns.items():
             match = re.search(pattern, summary, re.DOTALL)
-            if match:
-                extracted_parts[key] = match.group(1).strip()
-            else:
-                extracted_parts[key] = "Not provided"
+            extracted_parts[key] = match.group(1).strip() if match else "Not provided"
 
         return extracted_parts
