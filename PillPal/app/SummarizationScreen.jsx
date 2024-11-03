@@ -48,8 +48,9 @@ export function Summarization({ route }) {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.summaryText}>{summaryText || "No summaryText available."}</Text>
       </ScrollView>
-      <Button title="Download PDF" onPress={() => setModalVisible(true)} />
-
+      <TouchableOpacity style={styles.downloadButton} onPress={() => setModalVisible(true)}>
+        <Text style={styles.saveButtonText}>Download PDF</Text>
+      </TouchableOpacity>
       {/* Modal for file name input */}
       <Modal
         transparent={true}
@@ -92,6 +93,13 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: 'white',
+  },
+  downloadButton: {
+    backgroundColor: '#24bc84', // Green color
+    padding: 10,
+    alignItems: 'center',
+    borderRadius: 5,
+    marginTop: 10,
   },
   title: {
     fontSize: 24,
