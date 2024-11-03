@@ -1,30 +1,88 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { Button, View, Text, StyleSheet, ScrollView, Alert, TextInput, Modal, TouchableOpacity } from 'react-native';
+import * as Print from 'expo-print';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 export function Summarization({ route }) {
   const { summaryText } = route.params;
-  console.log(summaryText);
+  const [fileName, setFileName] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
 
-  // Split the summaryText into sections based on your specified format
-  const sections = summaryText.split('\n\n').map(section => {
-    const [title, ...content] = section.split('\n');
-    return {
-      title: title.replace(':', ''), // Clean up title by removing colon
-      content: content.join('\n'), // Join the rest of the content back together
-    };
-  });
+  const generatePDF = async () => {
+    const html = `
+      <html>
+        <body>
+          <h1>Consultation Summary</h1>
+          <pre>${summaryText || "No summaryText available."}</pre>
+        </body>
+      </html>
+    `;
+
+    try {
+      const { uri } = await Print.printToFileAsync({ html });
+      const pdfFileName = `${fileName || 'Consultation_Summary'}.pdf`;
+      const pdfUri = `${FileSystem.documentDirectory}${pdfFileName}`;
+
+      // Move the PDF file to the chosen name and path
+      await FileSystem.moveAsync({
+        from: uri,
+        to: pdfUri,
+      });
+
+      setModalVisible(false);
+      Alert.alert('Success', `File saved as ${pdfFileName}`);
+      
+      // Share the PDF file
+      await Sharing.shareAsync(pdfUri);
+      
+    } catch (error) {
+      console.error('Failed to generate or open PDF:', error);
+      Alert.alert('Error', 'Failed to generate or open PDF');
+    }
+  };
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>Summarization:</Text>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {sections.map((section, index) => (
-          <View key={index} style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>{section.title}:</Text>
-            <Text style={styles.sectionContent}>{section.content || "No content available."}</Text>
-
-          </View>
-        ))}
+        <Text style={styles.summaryText}>{summaryText || "No summaryText available."}</Text>
       </ScrollView>
+      <Button title="Download PDF" onPress={() => setModalVisible(true)} />
+
+      {/* Modal for file name input */}
+      <Modal
+        transparent={true}
+        visible={modalVisible}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Enter PDF Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="File name"
+              value={fileName}
+              onChangeText={setFileName}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={generatePDF}
+              >
+                <Text style={styles.saveButtonText}>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -33,42 +91,73 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f0f8ff', // Light background color
+    backgroundColor: 'white',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#24bc84', // Main title color
+    color: '#24bc84',
   },
   scrollContainer: {
     paddingVertical: 10,
   },
-  sectionContainer: {
-    marginBottom: 20,
-    padding: 15,
-    borderRadius: 8,
-    backgroundColor: '#ffffff', // Background for each section
-    borderWidth: 1,
-    borderColor: '#ccc',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 3, // Elevation for Android
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#24bd85', // Section title color
-  },
-  sectionContent: {
+  summaryText: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#555', // Content text color
-    marginTop: 5,
+    color: 'black',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+  },
+  input: {
+    width: '100%',
+    padding: 10,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  saveButton: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: '#24bc84',
+    alignItems: 'center',
+    borderRadius: 5,
+    marginRight: 10,
+  },
+  cancelButton: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: '#ccc',
+    alignItems: 'center',
+    borderRadius: 5,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  cancelButtonText: {
+    color: 'white',
   },
 });
